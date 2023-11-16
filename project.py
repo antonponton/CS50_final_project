@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import pygame
+import time
 
 # Initialize Pygame
 pygame.init()
@@ -20,7 +21,12 @@ drawing_sessions = []
 last_tip_position = (0, 0)
 
 # Initialize the filename variable
-filename = "drawing.png"
+font = pygame.font.SysFont("Verdana", 20)
+filename = ""
+text = font.render(filename, True, (0, 0, 0))
+text_label = font.render("Enter filename:", True, (0, 0, 0))
+input_text = False
+input_rect = pygame.Rect((width / 2) - 70, (height / 2) - 16, 140, 32)
 
 # Define a list of colors to cycle through
 color_cycle = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
@@ -32,6 +38,15 @@ hands = mp_hands.Hands()
 
 # Open webcam
 cap = cv2.VideoCapture(0)
+
+def get_painting():
+    screen.fill((255, 255, 255))
+    for session in drawing_sessions:
+        for i in range(1, len(session)):
+            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], line_thickness)
+    for i in range(1, len(current_session)):
+        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], line_thickness)
+    pygame.display.update()
 
 while True:
     # Capture frame from webcam
@@ -76,6 +91,13 @@ while True:
     # Draw the color indicator circle in the right upper corner
     pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20), 15)
 
+    if input_text:
+        screen.fill((255, 255, 255))
+        pygame.draw.rect(screen, (0, 0, 0), input_rect)
+        screen.blit(text_label, ((width / 2) - 100, (height / 2) - 40))
+        text_surface = font.render(filename, True, (255, 255, 255))
+        screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+        input_rect.w = max(100, text_surface.get_width()+10)
 
     pygame.display.flip()
 
@@ -103,12 +125,21 @@ while True:
             elif event.key == pygame.K_c:
                 # Change color by cycling through the color_cycle list
                 current_color_index = (current_color_index + 1) % len(color_cycle)
-            elif event.key == pygame.K_s:
-                # Prompt the user for a filename and save the drawing
-                filename = input("Enter filename: ")
+            elif event.key == pygame.K_s and input_text == False:
+                input_text = True
+            elif event.key == pygame.K_BACKSPACE:
+                filename = filename[:-1]
+                text = font.render(filename, True, (255, 255, 255))
+            elif event.key == pygame.K_RETURN:
+                input_text = False
+                get_painting()
                 filename = filename + ".png"
                 pygame.image.save(screen, filename)
                 print(f"Drawing saved to {filename}")
+                filename = ""
+            elif event.unicode.isprintable() and input_text:
+                filename += event.unicode
+                text = font.render(filename, True, (255, 255, 255))
 
 # Release resources
 cap.release()
