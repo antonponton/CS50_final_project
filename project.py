@@ -24,6 +24,7 @@ drawing = False
 # Initialize the text input
 text_input = ""
 input_text = False
+input_box = pygame.Rect((width / 2) - 70, (height / 2) - 16, 150, 32)
 
 # Define a list of colors to cycle through
 color_cycle = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
@@ -60,7 +61,7 @@ while True:
         font = pygame.font.SysFont("Verdana", 20)
         text_label = font.render("Enter filename:", True, (0, 0, 0))
         filename = text_input
-        draw_text_input(screen, text_label, text_input, width, height)
+        draw_text_input(screen, text_label, text_input, input_box, width, height)
 
     pygame.display.flip()
 
@@ -84,7 +85,7 @@ while True:
                 cv2.destroyAllWindows()
                 pygame.quit()
                 exit()
-            elif event.key == pygame.K_c:
+            elif event.key == pygame.K_c and input_text == False:
                 # Change color by cycling through the color_cycle list
                 current_color_index = (current_color_index + 1) % len(color_cycle)
             elif event.key == pygame.K_s and input_text == False:
