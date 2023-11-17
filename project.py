@@ -1,6 +1,8 @@
 import cv2
-import mediapipe as mp
 import pygame
+from hand_tracking import track_hand
+from drawing import draw_sessions, draw_cursor, draw_color_indicator, draw_text_input
+from helpers import save_drawing
 
 # Initialize Pygame
 pygame.init()
@@ -14,100 +16,61 @@ pygame.display.set_caption("Hand Tracking Paint")
 cursor_color = (200, 200, 200)
 line_thickness = 5
 cursor_radius = 10
-drawing = False
 current_session = []
 drawing_sessions = []
 last_tip_position = (0, 0)
+drawing = False
 
-# Initialize the filename variable
-font = pygame.font.SysFont("Verdana", 20)
-filename = ""
-text = font.render(filename, True, (0, 0, 0))
-text_label = font.render("Enter filename:", True, (0, 0, 0))
+# Initialize the text input
+text_input = ""
 input_text = False
-input_rect = pygame.Rect((width / 2) - 70, (height / 2) - 16, 140, 32)
 
 # Define a list of colors to cycle through
 color_cycle = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
 current_color_index = 0
 
-# Initialize MediaPipe Hand module
-mp_hands = mp.solutions.hands
-hands = mp_hands.Hands()
-
 # Open webcam
 cap = cv2.VideoCapture(0)
-
-def get_painting():
-    screen.fill((255, 255, 255))
-    for session in drawing_sessions:
-        for i in range(1, len(session)):
-            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], line_thickness)
-    for i in range(1, len(current_session)):
-        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], line_thickness)
-    pygame.display.update()
 
 while True:
     # Capture frame from webcam
     ret, frame = cap.read()
 
-    # Process the frame with MediaPipe Hand Tracking
-    rgb_frame = cv2.cvtColor(cv2.flip(frame, 1), cv2.COLOR_BGR2RGB)
-    results = hands.process(rgb_frame)
+    # Get the coordinates of the tip of index finger
+    tip_of_index_finger = track_hand(frame, width, height, last_tip_position)
     
-
-    # Check for hand presence
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            # Extract the coordinates of the tip of the index finger (landmark point 8)
-            tip_of_index_finger_pygame = (
-                int(hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].x * width),
-                int(hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP].y * height)
-            )
-
-            # Check for changes in the tip of the index finger position
-            if tip_of_index_finger_pygame != last_tip_position:
-                if drawing:
-                    current_session.append((tip_of_index_finger_pygame, color_cycle[current_color_index]))
-                last_tip_position = tip_of_index_finger_pygame
+    # Check for changes in the tip of index finger position
+    if tip_of_index_finger != last_tip_position:
+        if drawing:
+            current_session.append((tip_of_index_finger, color_cycle[current_color_index]))
+        last_tip_position = tip_of_index_finger
+    
 
     # Display the Pygame window
     screen.fill((255, 255, 255))  # Clear the screen
 
-    # Draw all previous drawing sessions
-    for session in drawing_sessions:
-        for i in range(1, len(session)):
-            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], line_thickness)
-
-    # Draw the current drawing session
-    for i in range(1, len(current_session)):
-        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], line_thickness)
-
-    # Draw the cursor when not drawing
+    # Draw on Pygame window
+    draw_sessions(screen, drawing_sessions, current_session, line_thickness)
     if not drawing:
-        pygame.draw.circle(screen, cursor_color, last_tip_position, cursor_radius)
+        draw_cursor(screen, cursor_color, last_tip_position, cursor_radius)
+    draw_color_indicator(screen, color_cycle, current_color_index, width)
     
-    # Draw the color indicator circle in the right upper corner
-    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20), 15)
-
+    # Display the text input for filename to save
     if input_text:
-        screen.fill((255, 255, 255))
-        pygame.draw.rect(screen, (0, 0, 0), input_rect)
-        screen.blit(text_label, ((width / 2) - 100, (height / 2) - 40))
-        text_surface = font.render(filename, True, (255, 255, 255))
-        screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
-        input_rect.w = max(100, text_surface.get_width()+10)
+        font = pygame.font.SysFont("Verdana", 20)
+        text_label = font.render("Enter filename:", True, (0, 0, 0))
+        filename = text_input
+        draw_text_input(screen, text_label, text_input, width, height)
 
     pygame.display.flip()
 
-    # Draw on Pygame window
+    # Handle events in Pygame
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             cap.release()
             cv2.destroyAllWindows()
             pygame.quit()
             exit()
-
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 if not drawing:
@@ -127,18 +90,15 @@ while True:
             elif event.key == pygame.K_s and input_text == False:
                 input_text = True
             elif event.key == pygame.K_BACKSPACE:
-                filename = filename[:-1]
-                text = font.render(filename, True, (255, 255, 255))
+                text_input = text_input[:-1]
             elif event.key == pygame.K_RETURN:
                 input_text = False
-                get_painting()
-                filename = filename + ".png"
-                pygame.image.save(screen, filename)
-                print(f"Drawing saved to {filename}")
-                filename = ""
+                screen.fill((255, 255, 255))
+                draw_sessions(screen, drawing_sessions, current_session, line_thickness)
+                save_drawing(screen, filename)
+                text_input = ""
             elif event.unicode.isprintable() and input_text:
-                filename += event.unicode
-                text = font.render(filename, True, (255, 255, 255))
+                text_input += event.unicode
             elif event.key == pygame.K_n:
                 # New sheet
                 current_session = []
