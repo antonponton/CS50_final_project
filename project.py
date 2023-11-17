@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 import pygame
-import time
 
 # Initialize Pygame
 pygame.init()
@@ -140,6 +139,10 @@ while True:
             elif event.unicode.isprintable() and input_text:
                 filename += event.unicode
                 text = font.render(filename, True, (255, 255, 255))
+            elif event.key == pygame.K_n:
+                # New sheet
+                current_session = []
+                drawing_sessions = []
 
 # Release resources
 cap.release()
