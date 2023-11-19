@@ -15,7 +15,7 @@ def main():
 
     # Set up colors and drawing parameters
     cursor_color = (200, 200, 200)
-    line_thickness = 15
+    line_thickness = 10
     current_session = []
     drawing_sessions = []
     last_tip_position = (0, 0)
@@ -97,7 +97,7 @@ def main():
                 elif event.key == pygame.K_RETURN:
                     input_text = False
                     screen.fill((255, 255, 255))
-                    draw_sessions(screen, drawing_sessions, current_session, line_thickness)
+                    draw_sessions(screen, drawing_sessions, current_session)
                     save_drawing(screen, filename)
                     text_input = ""
                 elif event.unicode.isprintable() and input_text:

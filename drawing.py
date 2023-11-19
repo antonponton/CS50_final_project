@@ -3,18 +3,18 @@ import pygame
 def draw_sessions(screen, drawing_sessions, current_session):
     # Draw all previous drawing sessions
     for session in drawing_sessions:
-        for i in range(1, len(session)):
-            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], session[i][2])
+        for i in range(0, len(session)-1):
+            pygame.draw.circle(screen, session[i][1], session[i][0], session[i][2])
 
     # Draw the current drawing session
-    for i in range(1, len(current_session)):
-        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], current_session[i][2])
+    for i in range(0, len(current_session)-1):
+        pygame.draw.circle(screen, current_session[i][1], current_session[i][0], current_session[i][2])
 
 def draw_cursor(screen, cursor_color, last_tip_position, line_thickness):
-    pygame.draw.circle(screen, cursor_color, last_tip_position, line_thickness/2)
+    pygame.draw.circle(screen, cursor_color, last_tip_position, line_thickness)
 
 def draw_color_indicator(screen, color_cycle, current_color_index, line_thickness, width):
-    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20),  line_thickness/2)
+    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20),  line_thickness)
 
 def draw_text_input(screen, text_label, text_input, input_box, font, width, height):
     screen.fill((255, 255, 255))
