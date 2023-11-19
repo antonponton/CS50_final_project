@@ -15,8 +15,7 @@ def main():
 
     # Set up colors and drawing parameters
     cursor_color = (200, 200, 200)
-    line_thickness = 5
-    cursor_radius = 10
+    line_thickness = 15
     current_session = []
     drawing_sessions = []
     last_tip_position = (0, 0)
@@ -43,23 +42,23 @@ def main():
         # Get the coordinates of the tip of index finger
         tip_of_index_finger = track_hand(frame, width, height, last_tip_position)
         
-        # Check for changes in the tip of index finger position
+        # Check for changes in the tip of index finger position and append drawing to the current session
         if tip_of_index_finger != last_tip_position:
             if drawing:
-                current_session.append((tip_of_index_finger, color_cycle[current_color_index]))
+                current_session.append((tip_of_index_finger, color_cycle[current_color_index], line_thickness))
             last_tip_position = tip_of_index_finger
         
 
         # Display the Pygame window with texts
         screen.fill((255, 255, 255))  # Clear the screen
         draw_text_instructions(screen, font_small, width, height)
+        draw_color_indicator(screen, color_cycle, current_color_index, line_thickness, width)
 
         # Draw on Pygame window
-        draw_sessions(screen, drawing_sessions, current_session, line_thickness)
+        draw_sessions(screen, drawing_sessions, current_session)
         if not drawing:
-            draw_cursor(screen, cursor_color, last_tip_position, cursor_radius)
-        draw_color_indicator(screen, color_cycle, current_color_index, width)
-        
+            draw_cursor(screen, cursor_color, last_tip_position, line_thickness)
+
         # Display the text input for filename to save
         if input_text:
             text_label = font.render("Enter filename:", True, (0, 0, 0))
@@ -107,7 +106,10 @@ def main():
                     # New sheet
                     current_session = []
                     drawing_sessions = []
-
+                elif event.key == pygame.K_z:
+                    line_thickness += 1
+                elif event.key == pygame.K_x:
+                    line_thickness -= 1
     # Release resources
     cap.release()
     cv2.destroyAllWindows()

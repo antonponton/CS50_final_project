@@ -1,20 +1,20 @@
 import pygame
 
-def draw_sessions(screen, drawing_sessions, current_session, line_thickness):
+def draw_sessions(screen, drawing_sessions, current_session):
     # Draw all previous drawing sessions
     for session in drawing_sessions:
         for i in range(1, len(session)):
-            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], line_thickness)
+            pygame.draw.line(screen, session[i][1], session[i - 1][0], session[i][0], session[i][2])
 
     # Draw the current drawing session
     for i in range(1, len(current_session)):
-        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], line_thickness)
+        pygame.draw.line(screen, current_session[i][1], current_session[i - 1][0], current_session[i][0], current_session[i][2])
 
-def draw_cursor(screen, cursor_color, last_tip_position, cursor_radius):
-    pygame.draw.circle(screen, cursor_color, last_tip_position, cursor_radius)
+def draw_cursor(screen, cursor_color, last_tip_position, line_thickness):
+    pygame.draw.circle(screen, cursor_color, last_tip_position, line_thickness/2)
 
-def draw_color_indicator(screen, color_cycle, current_color_index, width):
-    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20), 10)
+def draw_color_indicator(screen, color_cycle, current_color_index, line_thickness, width):
+    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20),  line_thickness/2)
 
 def draw_text_input(screen, text_label, text_input, input_box, font, width, height):
     screen.fill((255, 255, 255))
@@ -27,9 +27,15 @@ def draw_text_input(screen, text_label, text_input, input_box, font, width, heig
 def draw_text_instructions(screen, font, width, height):
     text_color = font.render("Current color", True, (0, 0, 0))
     screen.blit(text_color, (width - 115, 15))
-    text_instructions = font.render(
+    text_instructions1 = font.render(
         "Press: [SPACE] to start/stop drawing | [C] to change the color | [S] to save the image | [N] to erease everything", 
         True, 
         (0, 0, 0,)
         )
-    screen.blit(text_instructions, (20, height - 20))
+    screen.blit(text_instructions1, (20, height - 40))
+    text_instructions2 = font.render(
+        "[z] to make paintbrush larger | [x] to make paintbrush smaller", 
+        True, 
+        (0, 0, 0,)
+        )
+    screen.blit(text_instructions2, (20, height - 20))
