@@ -10,11 +10,11 @@ def draw_sessions(screen, drawing_sessions, current_session):
     for i in range(0, len(current_session)-1):
         pygame.draw.circle(screen, current_session[i][1], current_session[i][0], current_session[i][2])
 
-def draw_cursor(screen, cursor_color, last_tip_position, line_thickness):
-    pygame.draw.circle(screen, cursor_color, last_tip_position, line_thickness)
+def draw_cursor(screen, cursor_color, last_tip_position, paintbrush_size):
+    pygame.draw.circle(screen, cursor_color, last_tip_position, paintbrush_size)
 
-def draw_color_indicator(screen, color_cycle, current_color_index, line_thickness, width):
-    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20),  line_thickness)
+def draw_color_indicator(screen, color_cycle, current_color_index, paintbrush_size, width):
+    pygame.draw.circle(screen, color_cycle[current_color_index], (width - 20, 20),  paintbrush_size)
 
 def draw_text_input(screen, text_label, text_input, input_box, font, width, height):
     screen.fill((255, 255, 255))
